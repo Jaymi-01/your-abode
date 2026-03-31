@@ -70,116 +70,99 @@ export function Navbar() {
           
           {/* Mobile Menu Toggle */}
           <button 
-            className="md:hidden p-2 text-foreground/80 hover:bg-secondary/50 rounded-xl transition-colors"
-            onClick={() => setIsMobileMenuOpen(true)}
+            className="md:hidden p-2 text-foreground/80 hover:bg-secondary/50 rounded-xl transition-colors z-[80]"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <List size={28} weight="bold" />
+            {isMobileMenuOpen ? (
+              <X size={28} weight="bold" />
+            ) : (
+              <List size={28} weight="bold" />
+            )}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] md:hidden"
+              className="fixed inset-0 bg-background/60 backdrop-blur-md z-[60] md:hidden"
             />
             
-            {/* Drawer */}
             <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 w-[80%] max-w-sm bg-white z-[70] md:hidden shadow-2xl flex flex-col"
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute top-20 left-4 right-4 bg-white z-[70] md:hidden shadow-2xl rounded-3xl border border-border/50 overflow-hidden flex flex-col p-2"
             >
-              <div className="p-6 flex items-center justify-between border-b border-border/50">
-                <span className="font-heading font-black text-xl tracking-tighter text-foreground">
-                  Menu
-                </span>
-                <button 
+              <div className="flex flex-col gap-1">
+                <Link 
+                  href="/" 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 text-foreground/40 hover:text-foreground hover:bg-secondary/50 rounded-xl transition-all"
+                  className="flex items-center gap-4 p-4 rounded-2xl hover:bg-secondary/50 transition-all font-bold group"
                 >
-                  <X size={24} weight="bold" />
-                </button>
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                    <House size={20} weight="bold" />
+                  </div>
+                  Marketplace
+                </Link>
+
+                {isSignedIn && (
+                  <>
+                    <Link 
+                      href="/dashboard" 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-secondary/50 transition-all font-bold group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                        <Layout size={20} weight="bold" />
+                      </div>
+                      Dashboard
+                    </Link>
+                    <Link 
+                      href="/favorites" 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-secondary/50 transition-all font-bold group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                        <ChatCircleDots size={20} weight="bold" />
+                      </div>
+                      Inbox & Activity
+                    </Link>
+                  </>
+                )}
               </div>
 
-              <div className="flex-grow overflow-y-auto p-6 space-y-6">
-                <div className="space-y-2">
-                  <p className="text-[10px] font-black text-foreground/30 uppercase tracking-widest px-2 mb-4">Explore</p>
+              <div className="mt-2 p-2 pt-4 border-t border-border/50">
+                {isSignedIn ? (
                   <Link 
-                    href="/" 
+                    href="/dashboard/list-new" 
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/30 hover:bg-primary/5 hover:text-primary transition-all font-bold group"
+                    className="flex items-center justify-center gap-2 w-full p-4 rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 transition-all font-bold text-lg"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
-                      <House size={20} weight="bold" />
-                    </div>
-                    Marketplace
+                    <Plus size={20} weight="bold" />
+                    List Property
                   </Link>
-                </div>
-
-                <div className="space-y-2 pt-4">
-                  <p className="text-[10px] font-black text-foreground/30 uppercase tracking-widest px-2 mb-4">Your Account</p>
-                  {isSignedIn ? (
-                    <>
-                      <Link 
-                        href="/dashboard" 
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/30 hover:bg-primary/5 hover:text-primary transition-all font-bold group"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
-                          <Layout size={20} weight="bold" />
-                        </div>
-                        Dashboard
-                      </Link>
-                      <Link 
-                        href="/favorites" 
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-4 p-4 rounded-2xl bg-secondary/30 hover:bg-primary/5 hover:text-primary transition-all font-bold group"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
-                          <ChatCircleDots size={20} weight="bold" />
-                        </div>
-                        Inbox & Activity
-                      </Link>
-                      <Link 
-                        href="/dashboard/list-new" 
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-4 p-4 rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 transition-all font-bold"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                          <Plus size={20} weight="bold" />
-                        </div>
-                        List New Property
-                      </Link>
-                    </>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-3">
-                      <SignInButton mode="modal">
-                        <Button variant="outline" className="w-full py-7 rounded-2xl text-lg font-bold">
-                          Sign In
-                        </Button>
-                      </SignInButton>
-                      <SignUpButton mode="modal">
-                        <Button className="w-full py-7 rounded-2xl text-lg font-bold shadow-lg shadow-primary/20">
-                          Join Your Abode
-                        </Button>
-                      </SignUpButton>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-8 text-center text-[10px] font-bold text-foreground/20 uppercase tracking-widest border-t border-border/50">
-                © 2026 Your Abode Rentals
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <SignInButton mode="modal">
+                      <Button variant="ghost" className="w-full py-6 rounded-2xl font-bold">
+                        Sign In
+                      </Button>
+                    </SignInButton>
+                    <SignUpButton mode="modal">
+                      <Button className="w-full py-6 rounded-2xl font-bold shadow-lg shadow-primary/20">
+                        Join
+                      </Button>
+                    </SignUpButton>
+                  </div>
+                )}
               </div>
             </motion.div>
           </>
