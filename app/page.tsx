@@ -71,20 +71,20 @@ export default function Home() {
 
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative pt-20 pb-32 overflow-hidden bg-[#FFFBEB]">
-          <div className="absolute top-0 right-0 -z-10 w-1/2 h-full bg-primary/5 rounded-bl-[200px]" />
+        <section className="relative pt-12 md:pt-20 pb-20 md:pb-32 overflow-hidden bg-[#FFFBEB]">
+          <div className="absolute top-0 right-0 -z-10 w-full md:w-1/2 h-full bg-primary/5 rounded-bl-none md:rounded-bl-[200px]" />
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl">
+            <div className="max-w-3xl text-center md:text-left">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <h1 className="text-6xl md:text-7xl font-heading font-black text-foreground mb-6 leading-tight">
-                  Tired of <span className="text-primary italic">Agent Wahala</span> <br />
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-heading font-black text-foreground mb-6 leading-[1.1]">
+                  Tired of <span className="text-primary italic">Agent Wahala</span> <br className="hidden md:block" />
                   & Greedy Landlords?
                 </h1>
-                <p className="text-xl text-foreground/70 mb-10 leading-relaxed max-w-xl">
+                <p className="text-base sm:text-lg md:text-xl text-foreground/70 mb-8 md:mb-10 leading-relaxed max-w-xl mx-auto md:mx-0">
                   No exorbitant fees, no stress. We've got you covered with 
                   warmest stays designed for comfort and peace of mind. 
                   Find your perfect home without the extra "charges."
@@ -96,11 +96,11 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="bg-white p-2 rounded-3xl shadow-2xl shadow-primary/10 border border-primary/10 max-w-2xl"
+                className="bg-white p-2 rounded-3xl shadow-2xl shadow-primary/10 border border-primary/10 max-w-2xl mx-auto md:mx-0"
               >
                 <div className="flex flex-col md:flex-row items-center gap-2">
-                  <div className="flex-grow flex items-center gap-3 px-4 py-3 w-full border-b md:border-b-0 md:border-r border-border/50">
-                    <MagnifyingGlass size={24} className="text-primary" />
+                  <div className="flex-grow flex items-center gap-3 px-4 py-2 sm:py-3 w-full border-b md:border-b-0 md:border-r border-border/50">
+                    <MagnifyingGlass size={24} className="text-primary shrink-0" />
                     <input 
                       type="text" 
                       placeholder="Lekki, Abuja, or VI?" 
@@ -109,11 +109,11 @@ export default function Home() {
                         setSearchQuery(e.target.value);
                         if (userLocation) setUserLocation(null);
                       }}
-                      className="bg-transparent border-none outline-none w-full text-foreground placeholder:text-foreground/40 font-medium"
+                      className="bg-transparent border-none outline-none w-full text-foreground placeholder:text-foreground/40 font-medium text-sm sm:text-base"
                     />
                     <button 
                       onClick={handleNearMe}
-                      className={`p-2 rounded-xl transition-all ${userLocation ? "bg-primary text-white" : "text-foreground/40 hover:bg-secondary/50"}`}
+                      className={`p-2 rounded-xl transition-all shrink-0 ${userLocation ? "bg-primary text-white" : "text-foreground/40 hover:bg-secondary/50"}`}
                       title="Find near me"
                     >
                       <NavigationArrow size={20} weight={userLocation ? "fill" : "bold"} />
@@ -121,7 +121,7 @@ export default function Home() {
                   </div>
                   <button 
                     onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-3 px-4 py-3 w-full md:w-auto hover:bg-secondary/50 rounded-2xl transition-colors"
+                    className="flex items-center justify-center gap-3 px-4 py-3 w-full md:w-auto hover:bg-secondary/50 rounded-2xl transition-colors shrink-0"
                   >
                     <SlidersHorizontal size={24} className="text-foreground/60" />
                     <span className="text-foreground/60 font-medium whitespace-nowrap">Filters</span>
