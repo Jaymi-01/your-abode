@@ -69,8 +69,9 @@ export default function AdminPage() {
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl border border-border/50 overflow-hidden">
-          {activeTab === "properties" ? (
-            <table className="w-full text-left">
+          <div className="overflow-x-auto">
+            {activeTab === "properties" ? (
+              <table className="w-full text-left min-w-[800px]">
               <thead className="bg-secondary/30 border-b border-border/50 text-[10px] font-black uppercase tracking-widest text-foreground/40">
                 <tr>
                   <th className="px-6 py-4">Property</th>
@@ -219,6 +220,7 @@ export default function AdminPage() {
               </tbody>
             </table>
           )}
+          </div>
         </div>
       </main>
     </div>
