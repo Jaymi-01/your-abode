@@ -5,10 +5,11 @@ import { Navbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { House, MapPin, CurrencyNgn, Bed, Image as ImageIcon, CheckCircle, UploadSimple, Spinner } from "@phosphor-icons/react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useMutation } from "convex/react";
+import { useMutation, useConvex } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -31,14 +32,17 @@ type FormValues = z.infer<typeof formSchema>;
 export default function ListNewProperty() {
   const [step, setStep] = useState(1);
   const [uploading, setUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const { user } = useUser();
+  const convex = useConvex();
   
   const createProperty = useMutation(api.properties.create);
   const generateUploadUrl = useMutation(api.properties.generateUploadUrl);
+  const updateRole = useMutation(api.users.updateRole);
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, watch, setValue, getValues, trigger, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       bedrooms: 1,
@@ -49,14 +53,19 @@ export default function ListNewProperty() {
 
   const onSubmit = async (data: FormValues) => {
     if (!user) return;
+    setIsSubmitting(true);
     try {
       await createProperty({
         ...data,
         ownerId: user.id,
       });
+      // Upgrade user to owner if they successfully list a property
+      await updateRole({ role: "owner" });
       router.push("/dashboard");
     } catch (error) {
       console.error("Failed to create property:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -66,6 +75,7 @@ export default function ListNewProperty() {
 
     setUploading(true);
     try {
+      const currentImages = getValues("images");
       const uploadedUrls = [];
       for (const file of Array.from(files)) {
         const postUrl = await generateUploadUrl();
@@ -75,10 +85,12 @@ export default function ListNewProperty() {
           body: file,
         });
         const { storageId } = await result.json();
-        const publicUrl = `${process.env.NEXT_PUBLIC_CONVEX_URL}/api/storage/${storageId}`;
-        uploadedUrls.push(publicUrl);
+        const publicUrl = await convex.query(api.properties.getPublicUrl, { storageId });
+        if (publicUrl) {
+          uploadedUrls.push(publicUrl);
+        }
       }
-      setValue("images", [...watch("images"), ...uploadedUrls]);
+      setValue("images", [...currentImages, ...uploadedUrls], { shouldValidate: true });
     } catch (error) {
       console.error("Upload failed:", error);
     } finally {
@@ -87,7 +99,20 @@ export default function ListNewProperty() {
     }
   };
 
-  const nextStep = () => setStep(s => s + 1);
+  const handleNextStep = async () => {
+    let fieldsToValidate: (keyof FormValues)[] = [];
+    if (step === 1) {
+      fieldsToValidate = ["title", "location", "price"];
+    } else if (step === 2) {
+      fieldsToValidate = ["description", "bedrooms"];
+    }
+    
+    const isValid = await trigger(fieldsToValidate);
+    if (isValid) {
+      setStep(s => s + 1);
+    }
+  };
+
   const prevStep = () => setStep(s => s - 1);
 
   return (
@@ -172,7 +197,7 @@ export default function ListNewProperty() {
                     {errors.price && <p className="text-destructive text-xs">{errors.price.message}</p>}
                   </div>
 
-                  <Button type="button" onClick={nextStep} className="w-full py-6 text-lg">Next Step</Button>
+                  <Button type="button" onClick={handleNextStep} className="w-full py-6 text-lg cursor-pointer">Next Step</Button>
                 </motion.div>
               )}
 
@@ -196,7 +221,7 @@ export default function ListNewProperty() {
                           key={n}
                           type="button"
                           onClick={() => setValue("bedrooms", n)}
-                          className={`w-12 h-12 rounded-xl font-bold transition-all ${
+                          className={`w-12 h-12 rounded-xl font-bold transition-all cursor-pointer ${
                             watch("bedrooms") === n ? "bg-primary text-white" : "bg-secondary/30 text-foreground/60"
                           }`}
                         >
@@ -219,7 +244,7 @@ export default function ListNewProperty() {
                             const current = watch("amenities");
                             setValue("amenities", current.includes(amenity) ? current.filter(a => a !== amenity) : [...current, amenity]);
                           }}
-                          className={`p-3 rounded-xl text-sm font-medium border-2 transition-all text-left flex items-center justify-between ${
+                          className={`p-3 rounded-xl text-sm font-medium border-2 transition-all text-left flex items-center justify-between cursor-pointer ${
                             watch("amenities").includes(amenity)
                               ? "border-accent bg-accent/5 text-accent"
                               : "border-secondary bg-secondary/30 text-foreground/60"
@@ -244,8 +269,8 @@ export default function ListNewProperty() {
                   </div>
 
                   <div className="flex gap-4">
-                    <Button type="button" variant="outline" onClick={prevStep} className="w-1/2 py-6">Back</Button>
-                    <Button type="button" onClick={nextStep} className="w-1/2 py-6">Next Step</Button>
+                    <Button type="button" variant="outline" onClick={prevStep} className="w-1/2 py-6 cursor-pointer">Back</Button>
+                    <Button type="button" onClick={handleNextStep} className="w-1/2 py-6 cursor-pointer">Next Step</Button>
                   </div>
                 </motion.div>
               )}
@@ -262,7 +287,7 @@ export default function ListNewProperty() {
 
                   <div className="space-y-4">
                     <div 
-                      onClick={() => !uploading && fileInputRef.current?.click()}
+                      onClick={() => !uploading && !isSubmitting && fileInputRef.current?.click()}
                       className={`w-full aspect-video rounded-3xl border-2 border-dashed flex flex-col items-center justify-center gap-4 transition-all cursor-pointer ${
                         uploading ? "border-primary/20 bg-primary/5" : "border-border hover:border-primary/40 hover:bg-primary/5"
                       }`}
@@ -296,11 +321,11 @@ export default function ListNewProperty() {
                     <div className="grid grid-cols-3 gap-4 mt-4">
                       {watch("images").map((url, i) => (
                         <div key={i} className="relative aspect-square rounded-xl overflow-hidden bg-secondary/50 group">
-                          <img src={url} alt="" className="w-full h-full object-cover" />
+                          <Image src={url} alt="" fill className="object-cover" />
                           <button 
                             type="button"
                             onClick={() => setValue("images", watch("images").filter((_, idx) => idx !== i))}
-                            className="absolute top-1 right-1 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-1 right-1 bg-destructive text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10"
                           >×</button>
                         </div>
                       ))}
@@ -309,8 +334,18 @@ export default function ListNewProperty() {
                   </div>
 
                   <div className="flex gap-4">
-                    <Button type="button" variant="outline" onClick={prevStep} className="w-1/2 py-6" disabled={uploading}>Back</Button>
-                    <Button type="submit" className="w-1/2 py-6 bg-accent hover:bg-accent/90" disabled={uploading}>Publish Listing</Button>
+                    <Button type="button" variant="outline" onClick={prevStep} className="w-1/2 py-6 cursor-pointer" disabled={uploading || isSubmitting}>Back</Button>
+                    <Button 
+                      type="submit" 
+                      className="w-1/2 py-6 bg-accent hover:bg-accent/90 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed" 
+                      disabled={uploading || isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <Spinner size={24} className="animate-spin" />
+                      ) : (
+                        "Publish Listing"
+                      )}
+                    </Button>
                   </div>
                 </motion.div>
               )}
