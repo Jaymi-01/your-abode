@@ -108,6 +108,12 @@ function PropertyInquiries({ property }: { property: any }) {
                 Just Now
               </div>
               <div className="flex gap-2">
+                <Link href={`/dashboard/inbox/${inquiry._id}`}>
+                  <Button size="sm" className="rounded-full px-4 h-9 gap-1.5 shadow-md shadow-primary/10">
+                    <ChatCircleDots size={18} weight="fill" />
+                    Open Chat
+                  </Button>
+                </Link>
                 <Button 
                   size="sm" 
                   variant="outline" 
@@ -115,7 +121,7 @@ function PropertyInquiries({ property }: { property: any }) {
                   onClick={() => updateStatus({ id: inquiry._id, status: "replied" })}
                   disabled={inquiry.status === "replied"}
                 >
-                  {inquiry.status === "replied" ? "Replied" : "Mark Replied"}
+                  {inquiry.status === "replied" ? "Replied" : "Mark Read"}
                 </Button>
                 <Button 
                   size="sm" 

@@ -25,13 +25,15 @@ export function Navbar() {
             Marketplace
           </Link>
           {isLoaded && isSignedIn && (
-            <Link href="/dashboard" className="font-medium text-foreground/80 hover:text-primary transition-colors">
-              Dashboard
-            </Link>
+            <>
+              <Link href="/dashboard" className="font-medium text-foreground/80 hover:text-primary transition-colors">
+                Dashboard
+              </Link>
+              <Link href="/favorites" className="font-medium text-foreground/80 hover:text-primary transition-colors">
+                Inbox
+              </Link>
+            </>
           )}
-          <Link href="/favorites" className="font-medium text-foreground/80 hover:text-primary transition-colors">
-            Favorites
-          </Link>
         </div>
 
         <div className="flex items-center gap-4">
