@@ -8,12 +8,18 @@ export const list = query({
     maxPrice: v.optional(v.number()),
     bedrooms: v.optional(v.number()),
     amenities: v.optional(v.array(v.string())),
+    userId: v.optional(v.string()), // Add optional userId
   },
   handler: async (ctx, args) => {
     let properties = await ctx.db
       .query("properties")
       .withIndex("by_status", (q) => q.eq("status", "available"))
       .collect();
+
+    // Filter out properties owned by the current user
+    if (args.userId) {
+      properties = properties.filter(p => p.ownerId !== args.userId);
+    }
 
     if (args.location) {
       const search = args.location.toLowerCase();
@@ -88,6 +94,43 @@ export const generateUploadUrl = mutation(async (ctx) => {
   return await ctx.storage.generateUploadUrl();
 });
 
+export const getPublicUrl = query({
+  args: { storageId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.storage.getUrl(args.storageId);
+  },
+});
+
+export const listAll = query({
+  args: {},
+  handler: async (ctx) => {
+    const properties = await ctx.db.query("properties").order("desc").collect();
+    
+    // Manually join with users table based on ownerId (which is Clerk ID)
+    return await Promise.all(
+      properties.map(async (p) => {
+        const owner = await ctx.db
+          .query("users")
+          .withIndex("by_token", (q) => q.eq("tokenIdentifier", `https://smashing-raven-58.clerk.accounts.dev|${p.ownerId}`))
+          .unique();
+        return {
+          ...p,
+          ownerName: owner?.name || "Unknown Owner",
+        };
+      })
+    );
+  },
+});
+
+export const toggleVerification = mutation({
+  args: { id: v.id("properties") },
+  handler: async (ctx, args) => {
+    const property = await ctx.db.get(args.id);
+    if (!property) return;
+    await ctx.db.patch(args.id, { isVerified: !property.isVerified });
+  },
+});
+
 export const updateStatus = mutation({
   args: {
     id: v.id("properties"),
@@ -95,5 +138,29 @@ export const updateStatus = mutation({
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, { status: args.status });
+  },
+});
+
+export const remove = mutation({
+  args: { id: v.id("properties") },
+  handler: async (ctx, args) => {
+    const property = await ctx.db.get(args.id);
+    if (!property) return;
+    
+    // Delete associated images from storage if they are Convex URLs
+    for (const imageUrl of property.images) {
+      if (imageUrl.includes("convex.cloud") || imageUrl.includes("convex.site")) {
+        const storageId = imageUrl.split("/").pop();
+        if (storageId) {
+          try {
+            await ctx.storage.delete(storageId as any);
+          } catch (e) {
+            console.error("Failed to delete storage item:", e);
+          }
+        }
+      }
+    }
+    
+    await ctx.db.delete(args.id);
   },
 });

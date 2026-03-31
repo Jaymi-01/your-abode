@@ -5,13 +5,19 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/nextjs";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { House, ChatCircleDots, Plus, MapPin, CurrencyNgn, Bed, CheckCircle } from "@phosphor-icons/react";
+import { House, ChatCircleDots, Plus, MapPin, CurrencyNgn, Bed, CheckCircle, Trash, ShieldCheck } from "@phosphor-icons/react";
 import Link from "next/link";
 import Image from "next/image";
 
-function PropertyItem({ p, updateStatus }: { p: any, updateStatus: any }) {
+function PropertyItem({ p, updateStatus, removeProperty }: { p: any, updateStatus: any, removeProperty: any }) {
   const inquiries = useQuery(api.inquiries.listForProperty, { propertyId: p._id });
   const pendingCount = inquiries?.filter(i => i.status === "pending").length || 0;
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this listing? This action cannot be undone.")) {
+      await removeProperty({ id: p._id });
+    }
+  };
 
   return (
     <div className="bg-white p-4 rounded-3xl shadow-sm border border-border/50 flex flex-col md:flex-row gap-6 hover:shadow-md transition-shadow relative overflow-hidden">
@@ -21,11 +27,14 @@ function PropertyItem({ p, updateStatus }: { p: any, updateStatus: any }) {
         </div>
       )}
       <div className="relative w-full md:w-48 h-32 rounded-2xl overflow-hidden shrink-0">
-        <Image src={p.images[0]} alt="" fill className="object-cover" />
+        <Image src={p.images[0] || "https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=1000&auto=format&fit=crop"} alt="" fill className="object-cover" />
       </div>
       <div className="flex-grow py-2">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-heading font-bold text-xl">{p.title}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-heading font-bold text-xl">{p.title}</h3>
+            {p.isVerified && <ShieldCheck size={18} className="text-accent" weight="fill" />}
+          </div>
           <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
             p.status === "available" ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"
           }`}>
@@ -37,25 +46,34 @@ function PropertyItem({ p, updateStatus }: { p: any, updateStatus: any }) {
           <div className="flex items-center gap-1"><CurrencyNgn size={16} /> ₦{p.price.toLocaleString()}/yr</div>
           <div className="flex items-center gap-1"><Bed size={16} /> {p.bedrooms} Beds</div>
         </div>
-        <div className="flex gap-2">
-          <Link href={`/property/${p._id}`}>
-            <Button variant="ghost" size="sm" className="text-xs">View Listing</Button>
-          </Link>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className={`text-[10px] font-bold uppercase tracking-wider h-8 rounded-full ${
-              p.status === "available" 
-                ? "border-primary/20 text-primary hover:bg-primary/5" 
-                : "border-accent/20 text-accent hover:bg-accent/5"
-            }`}
-            onClick={async () => {
-              const newStatus = p.status === "available" ? "rented" : "available";
-              await updateStatus({ id: p._id, status: newStatus });
-            }}
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2">
+            <Link href={`/property/${p._id}`}>
+              <Button variant="ghost" size="sm" className="text-xs">View Listing</Button>
+            </Link>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={`text-[10px] font-bold uppercase tracking-wider h-8 rounded-full ${
+                p.status === "available" 
+                  ? "border-primary/20 text-primary hover:bg-primary/5" 
+                  : "border-accent/20 text-accent hover:bg-accent/5"
+              }`}
+              onClick={async () => {
+                const newStatus = p.status === "available" ? "rented" : "available";
+                await updateStatus({ id: p._id, status: newStatus });
+              }}
+            >
+              Mark as {p.status === "available" ? "Rented" : "Available"}
+            </Button>
+          </div>
+          <button 
+            onClick={handleDelete}
+            className="p-2 text-destructive/40 hover:text-destructive transition-colors rounded-lg hover:bg-destructive/5"
+            title="Delete Listing"
           >
-            Mark as {p.status === "available" ? "Rented" : "Available"}
-          </Button>
+            <Trash size={20} />
+          </button>
         </div>
       </div>
     </div>
@@ -66,6 +84,9 @@ export default function Dashboard() {
   const { user } = useUser();
   const properties = useQuery(api.properties.listByOwner, { ownerId: user?.id || "" });
   const updateStatus = useMutation(api.properties.updateStatus);
+  const removeProperty = useMutation(api.properties.remove);
+
+  const isAdmin = user?.publicMetadata?.role === "admin";
 
   return (
     <div className="min-h-screen bg-secondary/20">
@@ -74,9 +95,18 @@ export default function Dashboard() {
       <main className="container mx-auto px-4 py-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div>
-            <h1 className="text-4xl font-heading font-black text-foreground mb-2">
-              Welcome back, {user?.firstName || "Owner"}
-            </h1>
+            <div className="flex items-center gap-4 mb-2">
+              <h1 className="text-4xl font-heading font-black text-foreground">
+                Welcome back, {user?.firstName || "Owner"}
+              </h1>
+              {isAdmin && (
+                <Link href="/admin">
+                  <span className="bg-foreground text-background px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter cursor-pointer hover:bg-primary transition-colors">
+                    Admin Panel
+                  </span>
+                </Link>
+              )}
+            </div>
             <p className="text-foreground/60">Manage your properties and respond to potential renters.</p>
           </div>
           <Link href="/dashboard/list-new">
@@ -113,7 +143,7 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-4">
                 {properties.map((p) => (
-                  <PropertyItem key={p._id} p={p} updateStatus={updateStatus} />
+                  <PropertyItem key={p._id} p={p} updateStatus={updateStatus} removeProperty={removeProperty} />
                 ))}
               </div>
             )}

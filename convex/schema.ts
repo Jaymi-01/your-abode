@@ -19,18 +19,24 @@ export default defineSchema({
 
   inquiries: defineTable({
     propertyId: v.id("properties"),
+    renterId: v.optional(v.string()), // Clerk user ID
     renterName: v.string(),
     renterEmail: v.string(),
     message: v.string(),
     viewingDate: v.optional(v.string()),
     status: v.union(v.literal("pending"), v.literal("replied"), v.literal("archived")),
-  }).index("by_propertyId", ["propertyId"]),
+    lastMessageAt: v.optional(v.number()),
+    readByOwner: v.optional(v.boolean()),
+    readByRenter: v.optional(v.boolean()),
+  }).index("by_propertyId", ["propertyId"])
+    .index("by_renterId", ["renterId"]),
 
   users: defineTable({
     name: v.string(),
     email: v.string(),
     role: v.union(v.literal("renter"), v.literal("owner")),
     tokenIdentifier: v.string(),
+    isVerified: v.optional(v.boolean()),
   }).index("by_token", ["tokenIdentifier"]),
 
   favorites: defineTable({
@@ -38,4 +44,11 @@ export default defineSchema({
     propertyId: v.id("properties"),
   }).index("by_user", ["userId"])
     .index("by_user_property", ["userId", "propertyId"]),
+
+  messages: defineTable({
+    inquiryId: v.id("inquiries"),
+    senderId: v.string(), // Clerk user ID
+    text: v.string(),
+    createdAt: v.number(),
+  }).index("by_inquiry", ["inquiryId"]),
 });
