@@ -10,7 +10,9 @@
 
 import type * as favorites from "../favorites.js";
 import type * as inquiries from "../inquiries.js";
+import type * as messages from "../messages.js";
 import type * as properties from "../properties.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -21,7 +23,9 @@ import type {
 declare const fullApi: ApiFromModules<{
   favorites: typeof favorites;
   inquiries: typeof inquiries;
+  messages: typeof messages;
   properties: typeof properties;
+  users: typeof users;
 }>;
 
 /**

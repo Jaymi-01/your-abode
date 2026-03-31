@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Navbar } from "@/components/navbar";
 import { PropertyCard } from "@/components/property-card";
 import dynamic from "next/dynamic";
@@ -9,26 +9,55 @@ const MapView = dynamic(() => import("@/components/map-view").then((mod) => mod.
   ssr: false,
   loading: () => <div className="w-full h-[600px] bg-secondary/30 rounded-3xl animate-pulse flex items-center justify-center font-bold text-foreground/40">Loading Map...</div>
 });
-import { MagnifyingGlass, SlidersHorizontal, House as HouseIcon, MapTrifold, SquaresFour } from "@phosphor-icons/react";
+import { MagnifyingGlass, SlidersHorizontal, House as HouseIcon, MapTrifold, SquaresFour, NavigationArrow } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
 
 export default function Home() {
+  const { user } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
   const [priceRange, setPriceRange] = useState<[number, number | undefined]>([0, undefined]);
   const [bedrooms, setBedrooms] = useState<number | undefined>(undefined);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
 
   const properties = useQuery(api.properties.list, {
-    location: searchQuery || undefined,
+    location: searchQuery === "Near Me" ? undefined : (searchQuery || undefined),
     minPrice: priceRange[0],
     maxPrice: priceRange[1],
     bedrooms: bedrooms,
     amenities: selectedAmenities.length > 0 ? selectedAmenities : undefined,
+    userId: user?.id,
   });
+
+  const filteredProperties = useMemo(() => {
+    if (!properties) return undefined;
+    if (!userLocation) return properties;
+
+    return properties.filter(p => {
+      if (!p.lat || !p.lng) return false;
+      const distance = Math.sqrt(
+        Math.pow(p.lat - userLocation.lat, 2) + 
+        Math.pow(p.lng - userLocation.lng, 2)
+      );
+      return distance < 0.1; // ~10km radius
+    });
+  }, [properties, userLocation]);
+
+  const handleNearMe = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition((pos) => {
+      setUserLocation({
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      });
+      setSearchQuery("Near Me");
+    });
+  };
 
   const toggleAmenity = (amenity: string) => {
     setSelectedAmenities(prev => 
@@ -76,9 +105,19 @@ export default function Home() {
                       type="text" 
                       placeholder="Lekki, Abuja, or VI?" 
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        if (userLocation) setUserLocation(null);
+                      }}
                       className="bg-transparent border-none outline-none w-full text-foreground placeholder:text-foreground/40 font-medium"
                     />
+                    <button 
+                      onClick={handleNearMe}
+                      className={`p-2 rounded-xl transition-all ${userLocation ? "bg-primary text-white" : "text-foreground/40 hover:bg-secondary/50"}`}
+                      title="Find near me"
+                    >
+                      <NavigationArrow size={20} weight={userLocation ? "fill" : "bold"} />
+                    </button>
                   </div>
                   <button 
                     onClick={() => setShowFilters(!showFilters)}
@@ -145,7 +184,7 @@ export default function Home() {
                         <div className="space-y-4">
                           <p className="font-bold text-sm text-foreground/60">Amenities</p>
                           <div className="flex flex-wrap gap-2">
-                            {["Wi-Fi", "24/7 Power", "Security", "Parking", "Water"].map((amenity) => (
+                            {["Wi-Fi", "24/7 Power", "Security", "Parking", "Water", "Gym", "Pool"].map((amenity) => (
                               <button
                                 key={amenity}
                                 onClick={() => toggleAmenity(amenity)}
@@ -178,7 +217,7 @@ export default function Home() {
                   Explore <span className="text-accent">Featured</span> Stays
                 </h2>
                 <p className="text-foreground/60 max-w-md">
-                  {properties?.length === 0 
+                  {filteredProperties?.length === 0 
                     ? "No properties found matching your search." 
                     : "Hand-picked properties that embody the Your Abode spirit."}
                 </p>
@@ -204,28 +243,28 @@ export default function Home() {
               </div>
             </div>
 
-            {properties === undefined ? (
+            {filteredProperties === undefined ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 opacity-50">
                 {[1, 2, 3, 4].map(i => (
                   <div key={i} className="bg-white h-[400px] rounded-2xl animate-pulse" />
                 ))}
               </div>
             ) : viewMode === "map" ? (
-              <MapView properties={properties} />
+              <MapView properties={filteredProperties} />
             ) : (
               <>
                 <motion.div 
                   layout
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
                 >
-                  <AnimatePresence>
-                    {properties.map((property) => (
+                  <AnimatePresence mode="popLayout">
+                    {filteredProperties.map((property) => (
                       <PropertyCard key={property._id} property={property} />
                     ))}
                   </AnimatePresence>
                 </motion.div>
 
-                {properties?.length === 0 && (
+                {filteredProperties?.length === 0 && (
                   <div className="text-center py-20">
                     <HouseIcon size={64} className="mx-auto text-primary/20 mb-4" />
                     <p className="text-xl font-heading font-bold text-foreground/40">Nothing to show here yet.</p>
