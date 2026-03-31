@@ -274,6 +274,41 @@ export default function Home() {
             )}
           </div>
         </section>
+
+        {/* FAQ Section with Accordion */}
+        <section className="py-32 bg-white">
+          <div className="container mx-auto px-4 max-w-3xl">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-heading font-black text-foreground mb-4">
+                Got <span className="text-primary">Questions?</span>
+              </h2>
+              <p className="text-foreground/60 text-lg">Everything you need to know about Your Abode.</p>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                {
+                  q: "Is there any agency fee involved?",
+                  a: "Absolutely not. Your Abode is built to eliminate predatory agency fees. You only pay the rent and any legal/agreement fees clearly stated by the owner."
+                },
+                {
+                  q: "How do I verify a property before paying?",
+                  a: "We recommend using our built-in inquiry system to chat with owners and schedule a physical viewing. Look for the 'Verified' badge on listings which means our team has vetted the property."
+                },
+                {
+                  q: "Can I list my own property?",
+                  a: "Yes! Click the 'List Your Property' button. You'll need to create an account, provide property details, and upload clear photos. Once listed, you can manage inquiries from your dashboard."
+                },
+                {
+                  q: "What happens after I send an inquiry?",
+                  a: "The owner receives a notification and can reply to you directly through our secure messaging system. You'll see a notification in your Inbox when they respond."
+                }
+              ].map((faq, i) => (
+                <FAQItem key={i} question={faq.q} answer={faq.a} />
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
 
       <footer className="bg-foreground text-background py-16">
@@ -284,6 +319,42 @@ export default function Home() {
           <p className="text-background/60">© 2026 Your Abode Rentals. All rights reserved.</p>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="bg-secondary/20 rounded-3xl overflow-hidden border border-border/50">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-8 py-6 flex items-center justify-between text-left hover:bg-secondary/30 transition-colors"
+      >
+        <span className="text-lg font-bold text-foreground">{question}</span>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.3 }}
+          className="text-primary"
+        >
+          <CaretDown size={24} weight="bold" />
+        </motion.div>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <div className="px-8 pb-8 text-foreground/60 leading-relaxed">
+              {answer}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
