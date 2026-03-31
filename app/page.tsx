@@ -9,7 +9,7 @@ const MapView = dynamic(() => import("@/components/map-view").then((mod) => mod.
   ssr: false,
   loading: () => <div className="w-full h-[600px] bg-secondary/30 rounded-3xl animate-pulse flex items-center justify-center font-bold text-foreground/40">Loading Map...</div>
 });
-import { MagnifyingGlass, SlidersHorizontal, House as HouseIcon, MapTrifold, SquaresFour, NavigationArrow } from "@phosphor-icons/react";
+import { MagnifyingGlass, SlidersHorizontal, House as HouseIcon, MapTrifold, SquaresFour, NavigationArrow, CaretDown } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
