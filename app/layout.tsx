@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Outfit } from "next/font/google";
 import "./globals.css";
 import { ConvexClientProvider } from "@/components/providers/convex-client-provider";
 import { ClerkProvider } from "@clerk/nextjs";
+import { SyncUser } from "@/components/sync-user";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -31,6 +32,7 @@ export default function RootLayout({
           className={`${plusJakartaSans.variable} ${outfit.variable} antialiased font-body`}
         >
           <ConvexClientProvider>
+            <SyncUser />
             {children}
           </ConvexClientProvider>
         </body>
