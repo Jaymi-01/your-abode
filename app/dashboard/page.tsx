@@ -92,38 +92,38 @@ export default function Dashboard() {
     <div className="min-h-screen bg-secondary/20">
       <Navbar />
       
-      <main className="container mx-auto px-4 py-12">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+      <main className="container mx-auto px-4 py-8 md:py-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12">
           <div>
-            <div className="flex items-center gap-4 mb-2">
-              <h1 className="text-4xl font-heading font-black text-foreground">
+            <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-2">
+              <h1 className="text-3xl md:text-4xl font-heading font-black text-foreground">
                 Welcome back, {user?.firstName || "Owner"}
               </h1>
               {isAdmin && (
                 <Link href="/admin">
-                  <span className="bg-foreground text-background px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter cursor-pointer hover:bg-primary transition-colors">
+                  <span className="bg-foreground text-background px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter cursor-pointer hover:bg-primary transition-colors inline-block">
                     Admin Panel
                   </span>
                 </Link>
               )}
             </div>
-            <p className="text-foreground/60">Manage your properties and respond to potential renters.</p>
+            <p className="text-foreground/60 text-sm md:text-base">Manage your properties and respond to potential renters.</p>
           </div>
-          <Link href="/dashboard/list-new">
-            <Button className="rounded-full px-8 py-6 text-lg shadow-lg shadow-primary/20 gap-2">
+          <Link href="/dashboard/list-new" className="w-full md:w-auto">
+            <Button className="w-full md:w-auto rounded-full px-8 py-6 text-lg shadow-lg shadow-primary/20 gap-2">
               <Plus weight="bold" /> List New Property
             </Button>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
           {/* Properties List */}
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-heading font-black flex items-center gap-2">
+              <h2 className="text-xl md:text-2xl font-heading font-black flex items-center gap-2">
                 <House size={28} className="text-primary" /> Your Listings
               </h2>
-              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">
+              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] md:text-xs font-bold">
                 {properties?.length || 0} Total
               </span>
             </div>

@@ -150,7 +150,7 @@ export default function AdminPage() {
               </tbody>
             </table>
           ) : (
-            <table className="w-full text-left">
+            <table className="w-full text-left min-w-[600px]">
               <thead className="bg-secondary/30 border-b border-border/50 text-[10px] font-black uppercase tracking-widest text-foreground/40">
                 <tr>
                   <th className="px-6 py-4">User</th>

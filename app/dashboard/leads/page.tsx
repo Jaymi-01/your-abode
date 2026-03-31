@@ -16,14 +16,14 @@ export default function LeadsDashboard() {
     <div className="min-h-screen bg-secondary/20">
       <Navbar />
       
-      <main className="container mx-auto px-4 py-12">
-        <Link href="/dashboard" className="inline-flex items-center gap-2 text-foreground/60 hover:text-primary mb-8 transition-colors">
+      <main className="container mx-auto px-4 py-8 md:py-12">
+        <Link href="/dashboard" className="inline-flex items-center gap-2 text-foreground/60 hover:text-primary mb-6 md:mb-8 transition-colors">
           <ArrowLeft size={20} />
           Back to Dashboard
         </Link>
 
-        <h1 className="text-4xl font-heading font-black text-foreground mb-12 flex items-center gap-4">
-          <ChatCircleDots size={48} className="text-primary" weight="fill" />
+        <h1 className="text-3xl md:text-4xl font-heading font-black text-foreground mb-8 md:mb-12 flex items-center gap-4">
+          <ChatCircleDots size={48} className="text-primary hidden sm:block" weight="fill" />
           Manage Your Leads
         </h1>
 

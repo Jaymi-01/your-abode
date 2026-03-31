@@ -17,25 +17,25 @@ function InquiryItem({ inquiry }: { inquiry: any }) {
 
   return (
     <Link href={`/dashboard/inbox/${inquiry._id}`}>
-      <div className="bg-white p-6 rounded-3xl border border-border/50 hover:shadow-lg transition-all flex flex-col md:flex-row gap-6 items-center group relative">
-        <div className="w-full md:w-32 h-24 rounded-2xl overflow-hidden shrink-0 relative">
+      <div className="bg-white p-4 md:p-6 rounded-3xl border border-border/50 hover:shadow-lg transition-all flex flex-col md:flex-row gap-4 md:gap-6 items-center group relative">
+        <div className="w-full md:w-32 h-32 md:h-24 rounded-2xl overflow-hidden shrink-0 relative">
           <img src={property.images[0]} alt="" className="w-full h-full object-cover" />
         </div>
-        <div className="flex-grow">
+        <div className="flex-grow w-full">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-heading font-bold text-xl group-hover:text-primary transition-colors">{property.title}</h3>
-            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+            <h3 className="font-heading font-bold text-lg md:text-xl group-hover:text-primary transition-colors truncate pr-2">{property.title}</h3>
+            <span className={`px-2 md:px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 ${
               inquiry.status === "pending" ? "bg-primary/10 text-primary" : "bg-accent/10 text-accent"
             }`}>
               {inquiry.status}
             </span>
           </div>
-          <div className="flex flex-wrap gap-4 text-sm text-foreground/40 font-medium">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2 md:gap-4 text-xs md:text-sm text-foreground/40 font-medium">
             <div className="flex items-center gap-1"><MapPin size={16} /> {property.location}</div>
             {inquiry.viewingDate && <div className="flex items-center gap-1"><CalendarBlank size={16} /> Viewing: {inquiry.viewingDate}</div>}
           </div>
         </div>
-        <CaretRight size={24} className="text-foreground/20 group-hover:text-primary transition-colors" weight="bold" />
+        <CaretRight size={24} className="hidden md:block text-foreground/20 group-hover:text-primary transition-colors" weight="bold" />
       </div>
     </Link>
   );
@@ -54,18 +54,18 @@ export default function FavoritesPage() {
     <div className="min-h-screen bg-secondary/20">
       <Navbar />
       
-      <main className="container mx-auto px-4 py-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <h1 className="text-4xl font-heading font-black text-foreground flex items-center gap-4">
+      <main className="container mx-auto px-4 py-8 md:py-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 md:mb-12">
+          <h1 className="text-3xl md:text-4xl font-heading font-black text-foreground flex items-center gap-4">
             {activeTab === "favorites" ? (
-              <Heart size={48} className="text-primary" weight="fill" />
+              <Heart size={48} className="text-primary hidden sm:block" weight="fill" />
             ) : (
-              <ChatCircleDots size={48} className="text-primary" weight="fill" />
+              <ChatCircleDots size={48} className="text-primary hidden sm:block" weight="fill" />
             )}
             {activeTab === "favorites" ? "Your Wishlist" : "Your Inbox"}
           </h1>
 
-          <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-border/50">
+          <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-border/50 self-start">
             <button 
               onClick={() => setActiveTab("inbox")}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
