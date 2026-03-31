@@ -13,7 +13,12 @@ import { useMutation, useConvex } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { LocationPicker } from "@/components/location-picker";
+import dynamic from "next/dynamic";
+
+const LocationPicker = dynamic(() => import("@/components/location-picker").then((mod) => mod.LocationPicker), {
+  ssr: false,
+  loading: () => <div className="w-full h-64 bg-secondary/30 rounded-2xl animate-pulse flex items-center justify-center font-bold text-foreground/40">Loading Map...</div>
+});
 
 const formSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
