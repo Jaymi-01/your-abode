@@ -8,15 +8,18 @@ import Link from "next/link";
 import Image from "next/image";
 
 // Fix for default Leaflet markers in React
-const customIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+const getCustomIcon = () => {
+  if (typeof window === "undefined") return null;
+  return new L.Icon({
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+};
 
 interface MapViewProps {
   properties: any[];
@@ -45,11 +48,11 @@ export function MapView({ properties }: MapViewProps) {
         />
         
         {properties.map((p) => (
-          p.lat && p.lng && (
+          p.lat && p.lng && typeof window !== "undefined" && (
             <Marker 
               key={p._id} 
               position={[p.lat, p.lng]} 
-              icon={customIcon}
+              icon={getCustomIcon()!}
             >
               <Popup>
                 <Link href={`/property/${p._id}`} className="block w-48 overflow-hidden group">
