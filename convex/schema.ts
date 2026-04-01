@@ -51,4 +51,13 @@ export default defineSchema({
     text: v.string(),
     createdAt: v.number(),
   }).index("by_inquiry", ["inquiryId"]),
+
+  reviews: defineTable({
+    propertyId: v.id("properties"),
+    authorId: v.string(),
+    authorName: v.string(),
+    rating: v.number(),
+    comment: v.string(),
+    createdAt: v.number(),
+  }).index("by_property", ["propertyId"]),
 });

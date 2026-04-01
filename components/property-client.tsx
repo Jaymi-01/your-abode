@@ -3,13 +3,14 @@
 import { Navbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { MapPin, Bed, House, CheckCircle, ChatCircleDots, CurrencyNgn, ArrowLeft, CalendarBlank } from "@phosphor-icons/react";
-import { useMutation } from "convex/react";
+import { MapPin, Bed, House, CheckCircle, ChatCircleDots, CurrencyNgn, ArrowLeft, CalendarBlank, Star } from "@phosphor-icons/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function PropertyClient({ property }: { property: any }) {
   const submitInquiry = useMutation(api.inquiries.submit);
@@ -17,6 +18,11 @@ export function PropertyClient({ property }: { property: any }) {
   const [inquirySent, setInquirySent] = useState(false);
 
   const isOwner = user?.id === property.ownerId;
+  const reviews = useQuery(api.reviews.list, { propertyId: property._id });
+  const submitReview = useMutation(api.reviews.submit);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const handleInquiry = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -140,6 +146,92 @@ export function PropertyClient({ property }: { property: any }) {
                       {amenity}
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Reviews Section */}
+              <div className="mt-16 pt-10 border-t border-border/50">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-heading font-black">Reviews ({reviews?.length || 0})</h2>
+                  {reviews && reviews.length > 0 && (
+                    <div className="flex items-center gap-2 font-bold text-lg">
+                      <Star weight="fill" className="text-primary" />
+                      {(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)}
+                    </div>
+                  )}
+                </div>
+
+                {/* Review Form */}
+                {user && !isOwner && !reviews?.find(r => r.authorId === user.id) && (
+                  <div className="bg-secondary/20 p-6 rounded-3xl mb-10 border border-border/50">
+                    <h3 className="font-bold mb-4">Leave a review</h3>
+                    <div className="flex gap-2 mb-4">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => setReviewRating(star)}
+                          className="text-primary hover:scale-110 transition-transform"
+                        >
+                          <Star size={24} weight={star <= reviewRating ? "fill" : "regular"} />
+                        </button>
+                      ))}
+                    </div>
+                    <textarea
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                      placeholder="Share your experience..."
+                      className="w-full p-4 rounded-2xl bg-white border-none outline-none focus:ring-2 ring-primary/20 transition-all resize-none text-sm"
+                      rows={3}
+                    />
+                    <Button 
+                      onClick={async () => {
+                        if (!reviewComment) return;
+                        setSubmittingReview(true);
+                        try {
+                          await submitReview({ propertyId: property._id, rating: reviewRating, comment: reviewComment });
+                          setReviewComment("");
+                        } catch (e) {
+                          alert("Failed to submit review");
+                        } finally {
+                          setSubmittingReview(false);
+                        }
+                      }}
+                      disabled={submittingReview || !reviewComment}
+                      className="mt-4 px-8"
+                    >
+                      Post Review
+                    </Button>
+                  </div>
+                )}
+
+                <div className="space-y-6">
+                  {reviews === undefined ? (
+                    Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
+                  ) : reviews.length === 0 ? (
+                    <p className="text-foreground/40 italic">No reviews yet.</p>
+                  ) : (
+                    reviews.map((review) => (
+                      <div key={review._id} className="bg-white p-6 rounded-2xl border border-border/50">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black uppercase text-xs">
+                              {review.authorName.slice(0, 2)}
+                            </div>
+                            <div>
+                              <p className="font-bold text-sm">{review.authorName}</p>
+                              <p className="text-[10px] text-foreground/40 uppercase font-black">{new Date(review.createdAt).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star key={i} size={14} weight={i < review.rating ? "fill" : "regular"} className="text-primary" />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-foreground/70 text-sm leading-relaxed">"{review.comment}"</p>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
