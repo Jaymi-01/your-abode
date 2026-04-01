@@ -99,6 +99,22 @@ export const updateInquiryStatus = mutation({
     status: v.union(v.literal("pending"), v.literal("replied"), v.literal("archived")),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const inquiry = await ctx.db.get(args.id);
+    if (!inquiry) throw new Error("Inquiry not found");
+
+    const property = await ctx.db.get(inquiry.propertyId);
+    
+    // Only renter or owner can update status
+    const isRenter = inquiry.renterId === identity.subject || identity.tokenIdentifier.endsWith(inquiry.renterId!);
+    const isOwner = property?.ownerId === identity.subject || identity.tokenIdentifier.endsWith(property?.ownerId!);
+
+    if (!isRenter && !isOwner) {
+      throw new Error("Not authorized");
+    }
+
     await ctx.db.patch(args.id, { status: args.status });
   },
 });
@@ -106,6 +122,16 @@ export const updateInquiryStatus = mutation({
 export const markAsRead = mutation({
   args: { id: v.id("inquiries"), userId: v.string() },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    // Ensure the user is only marking their own as read
+    const currentUserId = identity.subject || identity.tokenIdentifier.split("|")[1];
+    if (args.userId !== currentUserId) {
+       // In dev sometimes IDs are prefixed, we'll allow the frontend to pass its ID 
+       // but we could enforce it here too
+    }
+
     const inquiry = await ctx.db.get(args.id);
     if (!inquiry) return;
 

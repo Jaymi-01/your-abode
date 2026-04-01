@@ -8,18 +8,28 @@ export const send = mutation({
     text: v.string(),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const inquiry = await ctx.db.get(args.id || args.inquiryId);
+    if (!inquiry) throw new Error("Inquiry not found");
+
+    const property = await ctx.db.get(inquiry.propertyId);
+    
+    // Only renter or owner can send messages
+    const isRenter = inquiry.renterId === identity.subject || identity.tokenIdentifier.endsWith(inquiry.renterId!);
+    const isOwner = property?.ownerId === identity.subject || identity.tokenIdentifier.endsWith(property?.ownerId!);
+
+    if (!isRenter && !isOwner) {
+      throw new Error("Not authorized to participate in this conversation");
+    }
+
     await ctx.db.insert("messages", {
       inquiryId: args.inquiryId,
       senderId: args.senderId,
       text: args.text,
       createdAt: Date.now(),
     });
-
-    const inquiry = await ctx.db.get(args.inquiryId);
-    if (!inquiry) return;
-
-    const property = await ctx.db.get(inquiry.propertyId);
-    const isOwner = property?.ownerId === args.senderId;
 
     // If owner sends: unread for renter
     // If renter sends: unread for owner
