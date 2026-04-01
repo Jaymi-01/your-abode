@@ -9,8 +9,9 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { PaperPlaneRight, ArrowLeft, UserCircle } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatRelativeTime } from "@/lib/format-time";
 
-export default function ChatPage() {
+export function ChatPage() {
   const { inquiryId } = useParams();
   const { user } = useUser();
   const router = useRouter();
@@ -95,11 +96,11 @@ export default function ChatPage() {
                       : "bg-white text-foreground rounded-tl-none border border-border/50"
                   }`}>
                     <p className="text-sm leading-relaxed">{msg.text}</p>
-                    <p className={`text-[10px] mt-1 font-bold ${
+                    <span className={`text-[10px] block mt-1 ${
                       msg.senderId === user?.id ? "text-white/60 text-right" : "text-foreground/30"
                     }`}>
-                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                      {formatRelativeTime(msg.createdAt)}
+                    </span>
                   </div>
                 </motion.div>
               ))
