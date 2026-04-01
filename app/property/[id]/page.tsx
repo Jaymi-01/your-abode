@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${property.title} | Your Abode`,
-    description: `Rent this ${property.bedrooms} bedroom home in ${property.location} for ₦${property.price.toLocaleString()}/yr.`,
+    description: `Rent this ${property.bedrooms} bedroom property in ${property.location} for ₦${property.price.toLocaleString()}/yr. No agency fees.`,
     openGraph: {
       title: property.title,
       description: property.description,
