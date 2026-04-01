@@ -11,6 +11,8 @@ import Image from "next/image";
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import { formatRelativeTime } from "@/lib/format-time";
 
 export function PropertyClient({ property }: { property: any }) {
   const submitInquiry = useMutation(api.inquiries.submit);
@@ -27,7 +29,7 @@ export function PropertyClient({ property }: { property: any }) {
   const handleInquiry = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) {
-      alert("Please sign in to send an inquiry.");
+      toast.error("Please sign in to send an inquiry");
       return;
     }
     const formData = new FormData(e.currentTarget);
@@ -41,8 +43,9 @@ export function PropertyClient({ property }: { property: any }) {
         viewingDate: formData.get("viewingDate") as string || undefined,
       });
       setInquirySent(true);
+      toast.success("Inquiry sent successfully!");
     } catch (err) {
-      console.error(err);
+      toast.error("Failed to send inquiry");
     }
   };
 
@@ -194,8 +197,9 @@ export function PropertyClient({ property }: { property: any }) {
                         try {
                           await submitReview({ propertyId: property._id, rating: reviewRating, comment: reviewComment });
                           setReviewComment("");
+                          toast.success("Review posted!");
                         } catch (e) {
-                          alert("Failed to submit review");
+                          toast.error("You have already reviewed this property");
                         } finally {
                           setSubmittingReview(false);
                         }
@@ -223,7 +227,7 @@ export function PropertyClient({ property }: { property: any }) {
                             </div>
                             <div>
                               <p className="font-bold text-sm">{review.authorName}</p>
-                              <p className="text-[10px] text-foreground/40 uppercase font-black">{new Date(review.createdAt).toLocaleDateString()}</p>
+                              <p className="text-[10px] text-foreground/40 uppercase font-black">{formatRelativeTime(review.createdAt)}</p>
                             </div>
                           </div>
                           <div className="flex gap-0.5">

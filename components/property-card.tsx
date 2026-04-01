@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { toast } from "sonner";
 
 interface PropertyCardProps {
   property: {
@@ -33,11 +34,19 @@ export function PropertyCard({ property }: PropertyCardProps) {
   const handleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) return;
-    await toggleFavorite({
-      userId: user.id,
-      propertyId: property._id as any,
-    });
+    if (!user) {
+      toast.error("Please sign in to save favorites");
+      return;
+    }
+    try {
+      await toggleFavorite({
+        userId: user.id,
+        propertyId: property._id as any,
+      });
+      toast.success(isFavorited ? "Removed from favorites" : "Added to favorites");
+    } catch (e) {
+      toast.error("Failed to update favorites");
+    }
   };
 
   return (

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ConvexClientProvider } from "@/components/providers/convex-client-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { SyncUser } from "@/components/sync-user";
+import { Toaster } from "sonner";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -35,6 +36,7 @@ export default function RootLayout({
             <SyncUser />
             {children}
           </ConvexClientProvider>
+          <Toaster position="top-center" richColors />
         </body>
       </html>
     </ClerkProvider>
