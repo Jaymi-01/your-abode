@@ -48,7 +48,7 @@ export default function ListNewProperty() {
   const updateRole = useMutation(api.users.updateRole);
 
   const { register, handleSubmit, watch, setValue, getValues, trigger, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema as any) as any,
     defaultValues: {
       bedrooms: 1,
       amenities: [],
