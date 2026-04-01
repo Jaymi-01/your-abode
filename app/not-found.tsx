@@ -62,7 +62,7 @@ export default function NotFound() {
       </main>
 
       <footer className="py-8 text-center text-foreground/20 text-sm">
-        © 2026 Your Abode Rentals. All rights reserved.
+        © {new Date().getFullYear()} Your Abode Rentals. All rights reserved.
       </footer>
     </div>
   );

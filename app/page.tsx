@@ -385,7 +385,7 @@ export default function Home() {
           <p className="text-2xl font-heading font-black mb-4">
             Your <span className="text-primary">Abode</span>
           </p>
-          <p className="text-background/60 mb-8">© 2026 Your Abode Rentals. All rights reserved.</p>
+          <p className="text-background/60 mb-8">© {new Date().getFullYear()} Your Abode Rentals. All rights reserved.</p>
           <div className="flex justify-center gap-8 text-sm font-medium text-background/40">
             <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
             <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
