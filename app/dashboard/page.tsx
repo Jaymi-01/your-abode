@@ -8,6 +8,7 @@ import { api } from "@/convex/_generated/api";
 import { House, ChatCircleDots, Plus, MapPin, CurrencyNgn, Bed, CheckCircle, Trash, ShieldCheck } from "@phosphor-icons/react";
 import Link from "next/link";
 import Image from "next/image";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function PropertyItem({ p, updateStatus, removeProperty }: { p: any, updateStatus: any, removeProperty: any }) {
   const inquiries = useQuery(api.inquiries.listForProperty, { propertyId: p._id });
@@ -130,7 +131,22 @@ export default function Dashboard() {
 
             {properties === undefined ? (
               <div className="space-y-4">
-                {[1, 2].map(i => <div key={i} className="h-48 bg-white rounded-3xl animate-pulse" />)}
+                {[1, 2].map(i => (
+                  <div key={i} className="bg-white p-4 rounded-3xl border border-border/50 flex gap-6">
+                    <Skeleton className="w-48 h-32 rounded-2xl" />
+                    <div className="flex-grow space-y-4 py-2">
+                      <div className="flex justify-between">
+                        <Skeleton className="h-6 w-1/2" />
+                        <Skeleton className="h-6 w-20 rounded-full" />
+                      </div>
+                      <Skeleton className="h-4 w-3/4" />
+                      <div className="flex gap-2">
+                        <Skeleton className="h-8 w-24 rounded-lg" />
+                        <Skeleton className="h-8 w-24 rounded-lg" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : properties.length === 0 ? (
               <div className="bg-white p-12 rounded-3xl text-center border-2 border-dashed border-border/50">
