@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Link from "next/link";
@@ -23,9 +23,27 @@ const getCustomIcon = () => {
 
 interface MapViewProps {
   properties: any[];
+  onBoundsChange?: (bounds: { north: number, south: number, east: number, west: number }) => void;
 }
 
-export function MapView({ properties }: MapViewProps) {
+function MapEventsHandler({ onBoundsChange }: { onBoundsChange?: MapViewProps["onBoundsChange"] }) {
+  const map = useMapEvents({
+    moveend: () => {
+      if (onBoundsChange) {
+        const bounds = map.getBounds();
+        onBoundsChange({
+          north: bounds.getNorth(),
+          south: bounds.getSouth(),
+          east: bounds.getEast(),
+          west: bounds.getWest(),
+        });
+      }
+    },
+  });
+  return null;
+}
+
+export function MapView({ properties, onBoundsChange }: MapViewProps) {
   const center = useMemo(() => {
     const firstWithCoords = properties.find(p => p.lat && p.lng);
     return {
@@ -46,6 +64,7 @@ export function MapView({ properties }: MapViewProps) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <MapEventsHandler onBoundsChange={onBoundsChange} />
         
         {properties.map((p) => (
           p.lat && p.lng && typeof window !== "undefined" && (
