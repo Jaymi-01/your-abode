@@ -17,8 +17,7 @@ export function SyncUser() {
       const isAdmin = user.primaryEmailAddress?.emailAddress === "admin@yourabode.com";
       const role = isAdmin ? "owner" : "renter";
       
-      storeUser({ role })
-        .then(() => console.log("User synced successfully"))
+      storeUser({ role, imageUrl: user.imageUrl }).then(() => console.log("User synced successfully"))
         .catch((err) => console.error("Failed to sync user:", err));
     }
   }, [isClerkLoaded, user, isAuthenticated, storeUser]);

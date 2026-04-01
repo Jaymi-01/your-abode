@@ -34,6 +34,7 @@ export default defineSchema({
   users: defineTable({
     name: v.string(),
     email: v.string(),
+    imageUrl: v.optional(v.string()),
     role: v.union(v.literal("renter"), v.literal("owner")),
     tokenIdentifier: v.string(),
     isVerified: v.optional(v.boolean()),
