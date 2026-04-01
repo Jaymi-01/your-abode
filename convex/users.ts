@@ -9,6 +9,7 @@ import { mutation, query } from "./_generated/server";
 export const store = mutation({
   args: {
     role: v.union(v.literal("renter"), v.literal("owner")),
+    imageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -25,11 +26,12 @@ export const store = mutation({
       .unique();
 
     if (user !== null) {
-      // If we've seen this user before but name or email has changed, update them.
-      if (user.name !== identity.name || user.email !== identity.email) {
+      // If we've seen this user before but name, email, or image has changed, update them.
+      if (user.name !== identity.name || user.email !== identity.email || user.imageUrl !== args.imageUrl) {
         await ctx.db.patch(user._id, {
           name: identity.name ?? "Anonymous",
           email: identity.email ?? "unknown@email.com",
+          imageUrl: args.imageUrl,
         });
       }
       return user.role; // Return the existing role
@@ -39,6 +41,7 @@ export const store = mutation({
     await ctx.db.insert("users", {
       name: identity.name ?? "Anonymous",
       email: identity.email ?? "unknown@email.com",
+      imageUrl: args.imageUrl,
       tokenIdentifier: identity.tokenIdentifier,
       role: args.role,
     });
@@ -80,6 +83,16 @@ export const toggleVerification = mutation({
     const user = await ctx.db.get(args.id);
     if (!user) return;
     await ctx.db.patch(args.id, { isVerified: !user.isVerified });
+  },
+});
+
+export const getByClerkId = query({
+  args: { clerkId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", `https://smashing-raven-58.clerk.accounts.dev|${args.clerkId}`))
+      .unique();
   },
 });
 

@@ -104,6 +104,10 @@ export function PropertyClient({ property }: { property: any }) {
               <div className="flex items-center gap-2 text-foreground/60 mb-8">
                 <MapPin size={24} className="text-primary" />
                 <span className="text-lg font-medium">{property.location}</span>
+                <span className="mx-2">•</span>
+                <Link href={`/profile/${property.ownerId}`} className="text-primary font-bold hover:underline">
+                  View Owner Profile
+                </Link>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-8 border-y border-border/50">
