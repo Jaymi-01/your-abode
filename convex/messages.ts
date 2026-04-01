@@ -11,7 +11,7 @@ export const send = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not authenticated");
 
-    const inquiry = await ctx.db.get(args.id || args.inquiryId);
+    const inquiry = await ctx.db.get(args.inquiryId);
     if (!inquiry) throw new Error("Inquiry not found");
 
     const property = await ctx.db.get(inquiry.propertyId);
